@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>websocket测试</title>
+</head>
+<body>
+<script>
+
+function initWebsocket(onMessage) {
+
+    var heartBeat = null;
+
+    if ( 'https:' === document.location.protocol ) {
+        sock = new WebSocket("wss://localhost:8001");
+        //sock = new WebSocket("wss://www.ainemo.com/page/websocket/message");
+    } else {
+        sock = new WebSocket("ws://localhost:8001");
+        //sock = new WebSocket("ws://www.ainemo.com/page/websocket/message");
+    }
+
+    window.sock = sock;
+
+    sock.onopen = function() {
+        console.log('open');
+        sock.send("conferenceNo:" + '1234');
+
+        sock.onmessage = function(e) {
+            console.log(e.data);
+        };
+
+        sock.onclose = function(e) {
+
+            if (heartBeat) {
+                clearInterval(heartBeat);
+                heartBeat = null;
+            }
+
+            // 关闭60秒之后，重新构建websocket
+            setTimeout(function() {
+                initWebsocket();
+            }, 3000);
+
+            //此处websocke已经断开,如果重新连接,会在new WebSocket()方法报错且无法捕获,故去掉重连机制,在此处进行处理
+
+            //$.nemo.toast('websocke已断开,请稍后重新刷新页面');
+        };
+
+        heartBeat = setInterval(function() {
+            sock.send("ping");
+        }, 6000);
+
+    };
+    window.onerror = function (msg,url,line) {
+//        websocket
+        if(url.indexOf('WebSocket')>0){
+            return true;
+        }
+    }
+}
+initWebsocket();
+
+
+	// ws = new WebSocket('ws://localhost:8001');
+
+	// ws.onopen = function(e){
+	// 	console.log('connection success');
+	// 	ws.send('hello world');
+	// }
+	// ws.onclose = function(e){
+	// 	if(heartBeat){
+	// 		clearInterval(heartBeat);
+	// 		heartBeat = null;
+	// 	}
+	// 	console.log('close');
+	// 	setTimeout(function(){
+	// 		console.log('ready to reconnect');
+	// 	},3000);
+	// }
+	// ws.onmessage = function(msg){
+	// 	console.log('received:');
+	// 	console.log(msg.data)
+	// }
+	// ws.onerror = function(code,e){
+	// 	console.log('error');
+	// 	console.log(e);
+	// }	
+
+	// heartBeat = setInterval(function() {
+ //        ws.send("ping");
+ //    }, 6000);
+
+
+
+</script>
+</body>
+</html>
